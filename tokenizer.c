@@ -70,6 +70,12 @@ Token* nextToken(Tokenizer* tokenizer) {
 	return token;
 }
 
+void freeToken(Token* token) {
+	if(token->value != NULL)
+		free(token->value);
+	free(token);
+}
+
 bool isdelimiter(char symbol) {
 	return symbol == '(' || symbol == ')';
 }

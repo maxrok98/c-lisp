@@ -23,4 +23,5 @@ typedef struct Tokenizer {
 
 Tokenizer* generateTokenizer(char* expression);
 Token* nextToken(Tokenizer* tokenizer);
+void freeToken(Token* token);
 
