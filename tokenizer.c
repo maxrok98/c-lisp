@@ -63,7 +63,7 @@ Token* nextToken(Tokenizer* tokenizer) {
 	}
 
 	int tokenLength = tokenizer->end - tokenizer->start + 1;
-	token->value = (char*)malloc(sizeof(char) * (tokenLength + 1));
+	token->value = (char*)calloc(tokenLength + 1, sizeof(char));
 	memcpy(token->value, tokenizer->expression + tokenizer->start, tokenLength);
 	tokenizer->start = ++tokenizer->end;
 

@@ -8,6 +8,9 @@
 
 Ast* parse(Tokenizer* tokenizer) {
 	Token* token = nextToken(tokenizer);
+	if(token == NULL) {
+		return NULL;
+	}
 	if(token->tokenType == R_PAREN) {
 		freeToken(token);
 		return NULL;
@@ -24,7 +27,7 @@ Ast* parse(Tokenizer* tokenizer) {
 		}
 		else if(token->tokenType == SYMBOL) {
 			atom->type = A_SYMBOL;
-			atom->value.symbol = (char*)malloc(sizeof(char) * strlen(token->value));
+			atom->value.symbol = (char*)calloc(strlen(token->value) + 1, sizeof(char));
 			strcpy(atom->value.symbol, token->value);
 		}
 		ast->value = (void*)atom;
@@ -61,4 +64,49 @@ void addAst(List* list, Ast* ast) {
 	list->quantity++;
 }
 
-void freeAst(Ast* ast) {}
+Ast* copyAst(Ast* ast) {
+	Ast* astCopy = (Ast*)malloc(sizeof(Ast));
+	memcpy(astCopy, ast, sizeof(Ast));
+	if(ast->type == ATOM) {
+		Atom* atom = (Atom*)ast->value;
+		astCopy->value = malloc(sizeof(Atom));
+
+		Atom* atomCopy = (Atom*)astCopy->value;
+		memcpy(atomCopy, atom, sizeof(Atom));
+
+		if(atom->type == A_SYMBOL && atom->value.symbol != NULL) {
+			atomCopy->value.symbol = (char*)calloc(strlen(atom->value.symbol) + 1, sizeof(char));
+			strcpy(atomCopy->value.symbol, atom->value.symbol);
+		}
+	}
+	else if(ast->type == LIST) {
+		List* list = (List*)ast->value;
+		astCopy->value = initList();
+
+		List* listCopy = (List*)astCopy->value;
+
+		for(int i = 0; i < list->quantity; i++) {
+			addAst(listCopy, copyAst(list->astChildren[i]));
+		}
+	}
+	return astCopy;
+}
+
+void freeAst(Ast* ast) {
+	if(ast->type == ATOM) {
+		Atom* atom = (Atom*)ast->value;
+		if(atom->type == A_SYMBOL && atom->value.symbol != NULL) {
+			free(atom->value.symbol);
+		}
+		free(atom);
+	}
+	else if(ast->type == LIST) {
+		List* list = (List*)ast->value;
+		for(int i = 0; i < list->quantity; i++) {
+			freeAst(list->astChildren[i]);
+		}
+		free(list->astChildren);
+		free(list);
+	}
+	free(ast);
+}

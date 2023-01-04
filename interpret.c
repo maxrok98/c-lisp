@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "tokenizer.h"
 #include "parser.h"
@@ -18,12 +19,17 @@ int main(int argc, char** argv) {
 		fputs("> ", stdout);
 		fgets(input, EXPRESSION_SIZE, stdin);
 
+		// TODO: Add check if all parens are closed, if not ask for input again
+
 		Tokenizer* tokenizer = generateTokenizer(input);
 		//printTokenizer(tokenizer);
 		Ast* ast = parse(tokenizer);
-		printAstAsExpression(ast, 0);
+		Ast* astCopy = copyAst(ast);
+		printAstAsExpression(astCopy, 0);
 
 		free(tokenizer);
+		freeAst(ast);
+		freeAst(astCopy);
 		//break;
 	}
 }
