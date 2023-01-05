@@ -1,3 +1,5 @@
+#pragma once
+
 typedef enum TokenType {
 	L_PAREN,
 	R_PAREN,

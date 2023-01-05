@@ -5,98 +5,44 @@
 
 #include "tokenizer.h"
 #include "parser.h"
+#include "utils.h"
+#include "debug_utils.h"
 
 #define EXPRESSION_SIZE 128
-
-void printToken(Token* token);
-void printAstAsExpression(Ast* ast, int depth);
+#define LINE_SIZE (EXPRESSION_SIZE / 2)
 
 int main(int argc, char** argv) {
 	printf("Scheme interpreter:\n");
 
-	char input[EXPRESSION_SIZE];
+	char expressionInput[EXPRESSION_SIZE];
+	int savedExpressionLength = 0;
+	char lineInput[LINE_SIZE];
 	while(true){
-		fputs("> ", stdout);
-		fgets(input, EXPRESSION_SIZE, stdin);
+		if(savedExpressionLength == 0) fputs("> ", stdout);
+		fgets(lineInput, LINE_SIZE, stdin);
+		int actualLineSize = strlen(lineInput);
+		if(actualLineSize + savedExpressionLength < EXPRESSION_SIZE) {
+			strcpy(expressionInput + savedExpressionLength, lineInput);
+			savedExpressionLength += actualLineSize;			
+		}
+		if(checkParensParity(expressionInput) > 0) {
+			continue;
+		}
+		else if(checkParensParity(expressionInput) < 0) {
+			printf("Error: unexpected close paren ')'");
+			savedExpressionLength = 0;
+			continue;
+		}
 
-		// TODO: Add check if all parens are closed, if not ask for input again
-
-		Tokenizer* tokenizer = generateTokenizer(input);
-		//printTokenizer(tokenizer);
+		Tokenizer* tokenizer = generateTokenizer(expressionInput);
 		Ast* ast = parse(tokenizer);
 		Ast* astCopy = copyAst(ast);
-		printAstAsExpression(astCopy, 0);
+		printAstAsTree(astCopy, 0);
 
 		free(tokenizer);
 		freeAst(ast);
 		freeAst(astCopy);
-		//break;
-	}
-}
-
-void printDepth(char* c, int depth) {
-	for(int i = 0; i < depth; i++){
-		printf(c);
-	}
-}
-
-void printAstAsExpression(Ast* ast, int depth) {
-	if(ast->type == ATOM) {
-
-		printDepth(" | ", depth);
-
-		Atom* atom = (Atom*)ast->value;
-		switch(atom->type) {
-			case A_INTEGER:
-				printf("%ld\n", atom->value.integer);
-				break;
-			case A_REAL:
-				printf("%lf\n", atom->value.real);
-				break;
-			case A_SYMBOL:
-				printf("%s\n", atom->value.symbol);
-				break;
-		}
-	}
-	else if(ast->type == LIST) {
-		printDepth("---", depth + 1);
-		printf("\n");
-
-		List* list = (List*)ast->value;
-		for(int i = 0; i < list->quantity; i++) {
-			printAstAsExpression(list->astChildren[i], depth + 1);
-		}
-
-		printDepth("---", depth + 1);
-		printf("\n");
-	}
-}
-
-void printTokenizer(Tokenizer* tokenizer) {
-	Token* token;
-	while(token = nextToken(tokenizer)) {
-		printToken(token);
-		freeToken(token);
-	}
-}
-
-void printToken(Token* token) {
-	switch(token->tokenType){
-		case L_PAREN:
-			printf("Token: L_PAREN - %s\n", "(");
-			break;
-		case R_PAREN:
-			printf("Token: R_PAREN - %s\n", ")");
-			break;
-		case INTEGER:
-			printf("Token: INTEGER - %s\n", token->value);
-			break;
-		case REAL:
-			printf("Token: REAL - %s\n", token->value);
-			break;
-		case SYMBOL:
-			printf("Token: SYMBOL - %s\n", token->value);
-			break;
+		savedExpressionLength = 0;
 	}
 }
 
