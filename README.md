@@ -4,7 +4,7 @@
 ## Todo list
 - [x] Tokenizer
 - [x] Parser
-- [ ] Calculator
+- [x] Calculator
 - [ ] Environment
 - [ ] Lambdas
 - [ ] Conditions

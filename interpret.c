@@ -5,6 +5,7 @@
 
 #include "tokenizer.h"
 #include "parser.h"
+#include "eval.h"
 #include "utils.h"
 #include "debug_utils.h"
 
@@ -36,12 +37,15 @@ int main(int argc, char** argv) {
 
 		Tokenizer* tokenizer = generateTokenizer(expressionInput);
 		Ast* ast = parse(tokenizer);
-		Ast* astCopy = copyAst(ast);
-		printAstAsTree(astCopy, 0);
+		printAstAsTree(ast, 0);
+
+		Lval lval = eval(ast);
+		if(lval.type == V_INTEGER){
+			printf("%d\n", lval.value.integer);
+		}
 
 		free(tokenizer);
 		freeAst(ast);
-		freeAst(astCopy);
 		savedExpressionLength = 0;
 	}
 }

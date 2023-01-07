@@ -1,4 +1,5 @@
 #pragma once
+#include "tokenizer.h"
 
 typedef enum AstType {
 	ATOM,
@@ -22,7 +23,7 @@ typedef struct Atom {
 	union {
 		long integer;
 		double real;
-		char* symbol
+		char* symbol;
 	} value;
 } Atom;
 
