@@ -5,7 +5,7 @@
 - [x] Tokenizer
 - [x] Parser
 - [x] Calculator
-- [ ] Environment
+- [x] Environment
 - [ ] Lambdas
 - [ ] Conditions
 - [ ] Lists

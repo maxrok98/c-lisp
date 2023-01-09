@@ -9,7 +9,9 @@ typedef enum LvalType {
 	V_REAL,
 	V_BOOL,
 	V_STRING,
-	V_LAMBDA
+	V_LAMBDA,
+	V_SYMBOL,
+	V_NULL
 } LvalType;
 
 typedef struct Lval {
@@ -27,5 +29,7 @@ typedef struct Lval {
 	} value;
 } Lval;
 
-Lval eval(Ast* ast);
-Lval apply(char operation, Lval* lval, int quantity);
+#include "env.h"
+
+Lval eval(Ast* ast, Env* env);
+Lval apply(char operation, Lval* lval, int quantity, Env* env);

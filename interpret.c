@@ -6,6 +6,7 @@
 #include "tokenizer.h"
 #include "parser.h"
 #include "eval.h"
+//#include "env.h"
 #include "utils.h"
 #include "debug_utils.h"
 
@@ -14,6 +15,8 @@
 
 int main(int argc, char** argv) {
 	printf("Scheme interpreter:\n");
+
+	Env* env = setDefaultEnv();
 
 	char expressionInput[EXPRESSION_SIZE];
 	int savedExpressionLength = 0;
@@ -39,7 +42,7 @@ int main(int argc, char** argv) {
 		Ast* ast = parse(tokenizer);
 		printAstAsTree(ast, 0);
 
-		Lval lval = eval(ast);
+		Lval lval = eval(ast, env);
 		if(lval.type == V_INTEGER){
 			printf("%d\n", lval.value.integer);
 		}
