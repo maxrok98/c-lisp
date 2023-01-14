@@ -37,12 +37,14 @@ typedef enum LambdaType {
 
 struct Lambda {
 		LambdaType type;
-		Lval (*function)(Lval*, int);
-		char** args;
+		Lval* (*function)(Lval**, int);
+		int argc;
+		char** argv;
 		Env* env;
 		Ast* body;
 };
 
 Lval* eval(Ast* ast, Env* env);
-Lval* apply(char operation, Lval** lval, int quantity, Env* env);
-Lval* createLval(); // register referense if GC pool
+Lval* apply(Lval* operation, Lval** lval, int quantity, Env* env);
+Lval* createLval(); // register referense in GC pool
+void freeLval(Lval* lval);

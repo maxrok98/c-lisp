@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "eval.h"
 
@@ -7,43 +8,54 @@ int hashFunction(char* key);
 Var* createVariable(char* name, Lval* value);
 void changeVar(Var* var, Lval* lval);
 
+Lval* addProc(Lval** lval, int quantity);
+Lval* minusProc(Lval** lval, int quantity);
+Lval* multiplyProc(Lval** lval, int quantity);
+Lval* divideProc(Lval** lval, int quantity);
+
 Lval* getVar(char* name, Env* env) {
 	int index = hashFunction(name);
 
-	// TODO: Also search for name in root env
-	
 	Var* varBucket = env->variables[index];
-	if(varBucket != NULL) {
-		do {
-			if(strcmp(varBucket->name, name) == 0) {
-				return varBucket->value;
-			}
-		
-			varBucket = varBucket->next;
+	while(varBucket != NULL) {
+		if(strcmp(varBucket->name, name) == 0) {
+			return varBucket->value;
 		}
-		while(varBucket != NULL);
+	
+		varBucket = varBucket->next;
 	}
 
-	return NULL;
+	if(env->root == NULL) {
+		return NULL;
+	}
+	else {
+		return getVar(name, env->root);
+	}
 }
 
 void addVar(char* name, Lval* value, Env* env) {
 	int index = hashFunction(name);
 
+	Var* var = createVariable(name, value);
 	if(env->variables[index] == NULL) {
-		env->variables[index] = createVariable(name, value);
+		env->variables[index] = var;
 	}
 	else {
 		Var* varBucket = env->variables[index];
-		do {
-			if(strcmp(varBucket->name, name) == 0){
-				changeVar(varBucket, value);
+		if(strcmp(varBucket->name, name) == 0){
+			var->next = varBucket->next;
+			env->variables[index] = var;
+			return;
+		}
+		while(varBucket->next != NULL) {
+			if(strcmp(varBucket->next->name, name) == 0){
+				var->next = varBucket->next->next;
+				varBucket->next = var;
 				return;
 			}
 			varBucket = varBucket->next;
 		}
-		while(varBucket->next != NULL);
-		varBucket->next = createVariable(name, value);
+		varBucket->next = var;
 	}
 }
 
@@ -52,9 +64,45 @@ Env* setDefaultEnv() {
 	env->root = NULL;
 	memset(env->variables, 0, ENV_SIZE * sizeof(Var*));
 
-	// TODO: Add arithmetic operations
+	Lval* lvalAdd = createLval();
+	lvalAdd->type = V_LAMBDA;
+	lvalAdd->value.lambda = (Lambda*)malloc(sizeof(Lambda));
+	lvalAdd->value.lambda->type = NATIVE;
+	lvalAdd->value.lambda->function = &addProc;
+	addVar("+", lvalAdd, env);
+
+	Lval* lvalMinus = createLval();
+	lvalMinus->type = V_LAMBDA;
+	lvalMinus->value.lambda = (Lambda*)malloc(sizeof(Lambda));
+	lvalMinus->value.lambda->type = NATIVE;
+	lvalMinus->value.lambda->function = &minusProc;
+	addVar("-", lvalMinus, env);
+
+	Lval* lvalMultiply = createLval();
+	lvalMultiply->type = V_LAMBDA;
+	lvalMultiply->value.lambda = (Lambda*)malloc(sizeof(Lambda));
+	lvalMultiply->value.lambda->type = NATIVE;
+	lvalMultiply->value.lambda->function = &multiplyProc;
+	addVar("*", lvalMultiply, env);
+
+	Lval* lvalDivide = createLval();
+	lvalDivide->type = V_LAMBDA;
+	lvalDivide->value.lambda = (Lambda*)malloc(sizeof(Lambda));
+	lvalDivide->value.lambda->type = NATIVE;
+	lvalDivide->value.lambda->function = &divideProc;
+	addVar("/", lvalDivide, env);
 	
 	return env;
+}
+
+Env* extendEnv(Env* env) {
+	// TODO: register referen in GC pool
+	
+	Env* newEnv = (Env*)malloc(sizeof(Env));
+	newEnv->root = env;
+	memset(newEnv->variables, 0, ENV_SIZE * sizeof(Var*));
+	
+	return newEnv;
 }
 
 Var* createVariable(char* name, Lval* value) {
@@ -78,4 +126,52 @@ void changeVar(Var* var, Lval* lval) {
 int hashFunction(char* key) {
 	char letter = key[0];
 	return (letter & 0b1111) ^ 0b1010;
+}
+
+Lval* addProc(Lval** lval, int quantity) {
+	assert(lval[0]->type == V_INTEGER);
+	Lval* lvalResult = createLval();
+	lvalResult->type = V_INTEGER;
+	lvalResult->value.integer = lval[0]->value.integer;
+	for(int i = 1; i < quantity; i++) {
+		assert(lval[i]->type == V_INTEGER);
+		lvalResult->value.integer += lval[i]->value.integer;
+	}
+	return lvalResult;
+}
+
+Lval* minusProc(Lval** lval, int quantity) {
+	assert(lval[0]->type == V_INTEGER);
+	Lval* lvalResult = createLval();
+	lvalResult->type = V_INTEGER;
+	lvalResult->value.integer = lval[0]->value.integer;
+	for(int i = 1; i < quantity; i++) {
+		assert(lval[i]->type == V_INTEGER);
+		lvalResult->value.integer -= lval[i]->value.integer;
+	}
+	return lvalResult;
+}
+
+Lval* multiplyProc(Lval** lval, int quantity) {
+	assert(lval[0]->type == V_INTEGER);
+	Lval* lvalResult = createLval();
+	lvalResult->type = V_INTEGER;
+	lvalResult->value.integer = lval[0]->value.integer;
+	for(int i = 1; i < quantity; i++) {
+		assert(lval[i]->type == V_INTEGER);
+		lvalResult->value.integer *= lval[i]->value.integer;
+	}
+	return lvalResult;
+}
+
+Lval* divideProc(Lval** lval, int quantity) {
+	assert(lval[0]->type == V_INTEGER);
+	Lval* lvalResult = createLval();
+	lvalResult->type = V_INTEGER;
+	lvalResult->value.integer = lval[0]->value.integer;
+	for(int i = 1; i < quantity; i++) {
+		assert(lval[i]->type == V_INTEGER);
+		lvalResult->value.integer /= lval[i]->value.integer;
+	}
+	return lvalResult;
 }

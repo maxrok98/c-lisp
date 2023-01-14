@@ -6,7 +6,7 @@
 - [x] Parser
 - [x] Calculator
 - [x] Environment
-- [ ] Lambdas
+- [x] Lambdas
 - [ ] Conditions
 - [ ] Lists
 - [ ] Mutators
