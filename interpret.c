@@ -42,9 +42,9 @@ int main(int argc, char** argv) {
 		Ast* ast = parse(tokenizer);
 		printAstAsTree(ast, 0);
 
-		Lval lval = eval(ast, env);
-		if(lval.type == V_INTEGER){
-			printf("%d\n", lval.value.integer);
+		Lval* lval = eval(ast, env);
+		if(lval->type == V_INTEGER){
+			printf("%d\n", lval->value.integer);
 		}
 
 		free(tokenizer);

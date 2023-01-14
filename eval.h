@@ -14,6 +14,8 @@ typedef enum LvalType {
 	V_NULL
 } LvalType;
 
+typedef struct Lambda Lambda;
+
 typedef struct Lval {
 	LvalType type;
 
@@ -22,14 +24,25 @@ typedef struct Lval {
 		double real;
 		bool boolean;
 		char* string;
-
-		// lambda parts
-		void* env;
-		Ast* body;
+		Lambda* lambda;
 	} value;
 } Lval;
 
 #include "env.h"
 
-Lval eval(Ast* ast, Env* env);
-Lval apply(char operation, Lval* lval, int quantity, Env* env);
+typedef enum LambdaType {
+	NATIVE,
+	CONSTRUCTED
+} LambdaType;
+
+struct Lambda {
+		LambdaType type;
+		Lval (*function)(Lval*, int);
+		char** args;
+		Env* env;
+		Ast* body;
+};
+
+Lval* eval(Ast* ast, Env* env);
+Lval* apply(char operation, Lval** lval, int quantity, Env* env);
+Lval* createLval(); // register referense if GC pool

@@ -7,14 +7,16 @@ int hashFunction(char* key);
 Var* createVariable(char* name, Lval* value);
 void changeVar(Var* var, Lval* lval);
 
-Lval getVar(char* name, Env* env) {
+Lval* getVar(char* name, Env* env) {
 	int index = hashFunction(name);
+
+	// TODO: Also search for name in root env
 	
 	Var* varBucket = env->variables[index];
 	if(varBucket != NULL) {
 		do {
 			if(strcmp(varBucket->name, name) == 0) {
-				return *(varBucket->value);
+				return varBucket->value;
 			}
 		
 			varBucket = varBucket->next;
@@ -22,9 +24,7 @@ Lval getVar(char* name, Env* env) {
 		while(varBucket != NULL);
 	}
 
-	Lval lval;
-	lval.type = V_NULL;
-	return lval;
+	return NULL;
 }
 
 void addVar(char* name, Lval* value, Env* env) {
@@ -50,6 +50,9 @@ void addVar(char* name, Lval* value, Env* env) {
 Env* setDefaultEnv() {
 	Env* env = (Env*)malloc(sizeof(Env));
 	env->root = NULL;
+	memset(env->variables, 0, ENV_SIZE * sizeof(Var*));
+
+	// TODO: Add arithmetic operations
 	
 	return env;
 }
@@ -60,8 +63,7 @@ Var* createVariable(char* name, Lval* value) {
 	var->name = (char*)malloc(strlen(name) + 1);
 	memcpy(var->name, name, sizeof(char) * strlen(name) + 1);
 
-	var->value = (Lval*)malloc(sizeof(Lval));
-	memcpy(var->value, value, sizeof(Lval));
+	var->value = value;
 
 	var->next = NULL;
 

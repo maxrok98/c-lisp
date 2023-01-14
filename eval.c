@@ -7,14 +7,16 @@
 #include "eval.h"
 #include "parser.h"
 
-Lval eval(Ast* ast, Env* env) {
-	Lval lval;
+Lval* eval(Ast* ast, Env* env) {
+	Lval* lval;;
+
 	if(ast->type == ATOM) {
 		Atom* atom = (Atom*)ast->value;
 		switch(atom->type) {
 			case A_INTEGER:
-				lval.type = V_INTEGER;
-				lval.value.integer = atom->value.integer;
+				lval = createLval();
+				lval->type = V_INTEGER;
+				lval->value.integer = atom->value.integer;
 				break;
 			case A_SYMBOL:
 				lval = getVar(atom->value.symbol, env);
@@ -36,51 +38,62 @@ Lval eval(Ast* ast, Env* env) {
 					assert(list->quantity == 3);
 					assert(((Atom*)list->astChildren[1]->value)->type == A_SYMBOL);
 
-					Lval value = eval(list->astChildren[2], env);
+					Lval* value = eval(list->astChildren[2], env);
 					Atom* secondAtom = (Atom*)list->astChildren[1]->value;
 					char* variable = secondAtom->value.symbol;
 
-					addVar(variable, &value, env);
+					addVar(variable, value, env);
 
-					Lval result;
-					result.type = V_SYMBOL;
-					result.value.string = variable;
+					Lval* result = createLval();
+					result->type = V_SYMBOL;
+					result->value.string = variable;
 					return result;
+				}
+				if(strcmp(atom->value.symbol, "lambda") == 0) {
+					assert(list->quantity == 3);
+					assert(((Atom*)list->astChildren[1]->value)->type == A_SYMBOL);
+	
 				}
 			}
 			
 		}
 
-		Lval* lvalList = (Lval*)malloc(sizeof(Lval) * list->quantity - 1);
+		Lval** lvalList = (Lval**)malloc(sizeof(Lval*) * list->quantity - 1);
 		
-		for(int i = 0; i < list->quantity - 1; i++) {
-			lvalList[i] = eval(list->astChildren[i+1], env);
+		for(int i = 1; i < list->quantity; i++) {
+			lvalList[i-1] = eval(list->astChildren[i], env);
 		}
 		// TODO: Extend env
 		lval = apply(((Atom*)firstChild->value)->value.symbol[0], lvalList, list->quantity - 1, env);
+		free(lvalList);
 	}
 	return lval;
 }
 
-Lval apply(char operation, Lval* lval, int quantity, Env* env) {
-	Lval lvalResult;
-	lvalResult.type = V_INTEGER;
-	lvalResult.value.integer = lval[0].value.integer;
+Lval* apply(char operation, Lval** lval, int quantity, Env* env) {
+	Lval* lvalResult = createLval();
+	lvalResult->type = V_INTEGER;
+	lvalResult->value.integer = lval[0]->value.integer;
 	if(operation == '+') {
 		for(int i = 1; i < quantity; i++)
-			lvalResult.value.integer += lval[i].value.integer;
+			lvalResult->value.integer += lval[i]->value.integer;
 	}
 	if(operation == '-') {
 		for(int i = 1; i < quantity; i++)
-			lvalResult.value.integer -= lval[i].value.integer;
+			lvalResult->value.integer -= lval[i]->value.integer;
 	}
 	if(operation == '*') {
 		for(int i = 1; i < quantity; i++)
-			lvalResult.value.integer *= lval[i].value.integer;
+			lvalResult->value.integer *= lval[i]->value.integer;
 	}
 	if(operation == '/') {
 		for(int i = 1; i < quantity; i++)
-			lvalResult.value.integer /= lval[i].value.integer;
+			lvalResult->value.integer /= lval[i]->value.integer;
 	}
 	return lvalResult;
+}
+
+Lval* createLval() {
+	// TODO: add reference to GC pool
+	return (Lval*)malloc(sizeof(Lval));
 }
