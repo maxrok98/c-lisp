@@ -6,6 +6,7 @@
 //#include "env.h"
 #include "eval.h"
 #include "parser.h"
+#include "gc.h"
 
 Lval* eval(Ast* ast, Env* env) {
 	Lval* lval;
@@ -46,7 +47,8 @@ Lval* eval(Ast* ast, Env* env) {
 
 					Lval* result = createLval();
 					result->type = V_SYMBOL;
-					result->value.string = variable;
+					result->value.string = (char*)malloc(sizeof(char) * strlen(variable) + 1);
+					strcpy(result->value.string, variable);
 					return result;
 				}
 				if(strcmp(atom->value.symbol, "lambda") == 0) {
@@ -113,6 +115,25 @@ Lval* apply(Lval* operation, Lval** lval, int quantity, Env* env) {
 }
 
 Lval* createLval() {
-	// TODO: add reference to GC pool
-	return (Lval*)malloc(sizeof(Lval));
+	Lval* lval = (Lval*)malloc(sizeof(Lval));
+	lval->gcMark = false;
+	addGcRef(getGlobalGcPool(), (void*)lval, LVAL);
+	return lval;
+}
+
+void freeLval(Lval* lval) {
+	if(lval->type == V_LAMBDA) {
+		Lambda* lambda = lval->value.lambda;
+		if(lambda->type == CONSTRUCTED) {
+			for(int i = 0; i < lambda->argc; i++) {
+				free(lambda->argv[i]);
+			}
+			freeAst(lambda->body);
+		}
+	}
+	if(lval->type == V_SYMBOL) {
+		free(lval->value.string);
+	}
+	// TODO: Check if lval is string
+	free(lval);
 }

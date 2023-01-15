@@ -3,10 +3,11 @@
 #include <assert.h>
 
 #include "eval.h"
+#include "gc.h"
 
 int hashFunction(char* key);
 Var* createVariable(char* name, Lval* value);
-void changeVar(Var* var, Lval* lval);
+void freeVar(Var* var);
 
 Lval* addProc(Lval** lval, int quantity);
 Lval* minusProc(Lval** lval, int quantity);
@@ -64,6 +65,8 @@ Env* setDefaultEnv() {
 	env->root = NULL;
 	memset(env->variables, 0, ENV_SIZE * sizeof(Var*));
 
+	addGcRef(getGlobalGcPool(), (void*)env, ENV);
+
 	Lval* lvalAdd = createLval();
 	lvalAdd->type = V_LAMBDA;
 	lvalAdd->value.lambda = (Lambda*)malloc(sizeof(Lambda));
@@ -91,16 +94,19 @@ Env* setDefaultEnv() {
 	lvalDivide->value.lambda->type = NATIVE;
 	lvalDivide->value.lambda->function = &divideProc;
 	addVar("/", lvalDivide, env);
+
+	// TODO: Add cons, car, cdr as native procs
 	
 	return env;
 }
 
 Env* extendEnv(Env* env) {
-	// TODO: register referen in GC pool
-	
 	Env* newEnv = (Env*)malloc(sizeof(Env));
 	newEnv->root = env;
 	memset(newEnv->variables, 0, ENV_SIZE * sizeof(Var*));
+	newEnv->gcMark = false;
+
+	addGcRef(getGlobalGcPool(), (void*)newEnv, ENV);
 	
 	return newEnv;
 }
@@ -116,11 +122,6 @@ Var* createVariable(char* name, Lval* value) {
 	var->next = NULL;
 
 	return var;
-}
-
-void changeVar(Var* var, Lval* lval) {
-	// TODO: Leak of memory if value of variable accessible only via one variable
-	memcpy(var->value, lval, sizeof(Lval));
 }
 
 int hashFunction(char* key) {
@@ -174,4 +175,22 @@ Lval* divideProc(Lval** lval, int quantity) {
 		lvalResult->value.integer /= lval[i]->value.integer;
 	}
 	return lvalResult;
+}
+
+void freeEnv(Env* env) {
+	for(int i = 0; i < ENV_SIZE; i++) {
+		Var* varBucket = env->variables[i];
+		if(varBucket != NULL) {
+			freeVar(varBucket);
+		}
+	}
+	free(env);
+}
+
+void freeVar(Var* var) {
+	if(var->next != NULL) {
+		freeVar(var->next);
+	}
+	free(var->name);
+	free(var);
 }

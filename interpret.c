@@ -8,6 +8,7 @@
 #include "eval.h"
 //#include "env.h"
 #include "utils.h"
+#include "gc.h"
 #include "debug_utils.h"
 
 #define EXPRESSION_SIZE 128
@@ -16,6 +17,7 @@
 int main(int argc, char** argv) {
 	printf("Scheme interpreter:\n");
 
+	setGlobalGcPool(createGcPool());
 	Env* env = setDefaultEnv();
 
 	char expressionInput[EXPRESSION_SIZE];
@@ -40,13 +42,13 @@ int main(int argc, char** argv) {
 
 		Tokenizer* tokenizer = generateTokenizer(expressionInput);
 		Ast* ast = parse(tokenizer);
-		printAstAsTree(ast, 0);
 
 		Lval* lval = eval(ast, env);
 		if(lval->type == V_INTEGER){
 			printf("%d\n", lval->value.integer);
 		}
 
+		garbageCollect(env);
 		free(tokenizer);
 		freeAst(ast);
 		savedExpressionLength = 0;

@@ -26,6 +26,8 @@ typedef struct Lval {
 		char* string;
 		Lambda* lambda;
 	} value;
+
+	bool gcMark;
 } Lval;
 
 #include "env.h"

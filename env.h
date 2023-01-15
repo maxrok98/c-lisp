@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 //#include "eval.h"
 
 #define ENV_SIZE 16
@@ -13,6 +15,8 @@ typedef struct Var {
 typedef struct Env {
 	struct Env* root;
 	Var* variables[ENV_SIZE];
+
+	bool gcMark;
 } Env;
 
 
