@@ -8,7 +8,7 @@
 - [x] Environment
 - [x] Lambdas
 - [x] Garbage Collector 
-- [ ] Conditions
+- [x] Conditions
 - [ ] Lists
 - [ ] Mutators
 - [ ] Read from file
