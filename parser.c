@@ -25,6 +25,15 @@ Ast* parse(Tokenizer* tokenizer) {
 			atom->type = A_INTEGER;
 			atom->value.integer = atoi(token->value);
 		}
+		else if(token->tokenType == BOOLEAN) {
+			atom->type = A_BOOLEAN;
+			if(strcmp(token->value, "#t") == 0) {
+				atom->value.boolean = true;
+			}
+			else {
+				atom->value.boolean = false;
+			}
+		}
 		else if(token->tokenType == SYMBOL) {
 			atom->type = A_SYMBOL;
 			atom->value.symbol = (char*)calloc(strlen(token->value) + 1, sizeof(char));

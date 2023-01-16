@@ -19,6 +19,11 @@ Lval* eval(Ast* ast, Env* env) {
 				lval->type = V_INTEGER;
 				lval->value.integer = atom->value.integer;
 				break;
+			case A_BOOLEAN:
+				lval = createLval();
+				lval->type = V_BOOLEAN;
+				lval->value.boolean = atom->value.boolean;
+				break;
 			case A_SYMBOL:
 				lval = getVar(atom->value.symbol, env);
 				break;
@@ -51,7 +56,7 @@ Lval* eval(Ast* ast, Env* env) {
 					strcpy(result->value.string, variable);
 					return result;
 				}
-				if(strcmp(atom->value.symbol, "lambda") == 0) {
+				else if(strcmp(atom->value.symbol, "lambda") == 0) {
 					assert(list->quantity == 3);
 					assert(list->astChildren[1]->type == LIST);
 					assert(list->astChildren[2]->type == LIST);
@@ -79,6 +84,15 @@ Lval* eval(Ast* ast, Env* env) {
 	
 					return lval;
 				}
+				else if(strcmp(atom->value.symbol, "if") == 0) {
+					assert(list->quantity == 4);
+
+					Lval* predicate = eval(list->astChildren[1], env);
+					if(predicate->type == V_BOOLEAN && predicate->value.boolean == false) {
+						return eval(list->astChildren[3], env);
+					}
+					return eval(list->astChildren[2], env);
+				}
 			}
 			
 		}
@@ -99,7 +113,7 @@ Lval* apply(Lval* operation, Lval** lval, int quantity, Env* env) {
 	assert(operation->type == V_LAMBDA);
 	Lambda* lambda = operation->value.lambda;
 	if(lambda->type == NATIVE) {
-		return lambda->function(lval, quantity);
+		return lambda->function(lval, quantity, env);
 	}
 	else if (lambda->type == CONSTRUCTED) {
 		assert(lambda->argc == quantity);

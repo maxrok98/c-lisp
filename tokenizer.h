@@ -6,6 +6,7 @@ typedef enum TokenType {
 	INTEGER,
 	REAL,
 	SYMBOL,
+	BOOLEAN,
 	ERR
 } TokenType;
 

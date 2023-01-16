@@ -9,6 +9,7 @@
 bool isdelimiter(char symbol);
 bool isinteger(char* start, char* end);
 bool isreal(char* start, char* end);
+bool isboolean(char* start, char* end);
 
 /*
  * Tokenizer should be freed when not needed
@@ -58,6 +59,10 @@ Token* nextToken(Tokenizer* tokenizer) {
 							 tokenizer->expression + tokenizer->end)) {
 		token->tokenType = INTEGER;
 	}
+	else if(isboolean(tokenizer->expression + tokenizer->start,
+							 tokenizer->expression + tokenizer->end)) {
+		token->tokenType = BOOLEAN;
+	}
 	else {
 		token->tokenType = SYMBOL;
 	}
@@ -95,5 +100,9 @@ bool isinteger(char* start, char* end) {
 		return true;
 	}
 	return false;	
+}
+
+bool isboolean(char* start, char* end) {
+	return (*start == '#' && (*end == 't' || *end == 'f'));
 }
 

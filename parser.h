@@ -1,4 +1,7 @@
 #pragma once
+
+#include <stdbool.h>
+
 #include "tokenizer.h"
 
 typedef enum AstType {
@@ -14,6 +17,7 @@ typedef struct Ast {
 typedef enum AtomType {
 	A_INTEGER,
 	A_REAL,
+	A_BOOLEAN,
 	A_SYMBOL
 } AtomType;
 
@@ -23,6 +27,7 @@ typedef struct Atom {
 	union {
 		long integer;
 		double real;
+		bool boolean;
 		char* symbol;
 	} value;
 } Atom;

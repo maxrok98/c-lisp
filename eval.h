@@ -7,7 +7,7 @@
 typedef enum LvalType {
 	V_INTEGER,
 	V_REAL,
-	V_BOOL,
+	V_BOOLEAN,
 	V_STRING,
 	V_LAMBDA,
 	V_SYMBOL,
@@ -39,7 +39,7 @@ typedef enum LambdaType {
 
 struct Lambda {
 		LambdaType type;
-		Lval* (*function)(Lval**, int);
+		Lval* (*function)(Lval**, int, Env*);
 		int argc;
 		char** argv;
 		Env* env;
