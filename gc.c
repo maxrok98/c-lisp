@@ -110,7 +110,10 @@ void markLval(Lval* lval) {
 				markEnv(lambda->env);
 			}
 		}
-		// TODO: Check if laval is cons
+		else if(lval->type == V_PAIR) {
+			markLval(lval->value.pair->car);
+			markLval(lval->value.pair->cdr);
+		}
 	}
 	
 }

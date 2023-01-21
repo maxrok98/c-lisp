@@ -14,6 +14,8 @@
 #define EXPRESSION_SIZE 128
 #define LINE_SIZE (EXPRESSION_SIZE / 2)
 
+void printLval(Lval* lval);
+
 int main(int argc, char** argv) {
 	printf("Scheme interpreter:\n");
 
@@ -24,7 +26,7 @@ int main(int argc, char** argv) {
 	int savedExpressionLength = 0;
 	char lineInput[LINE_SIZE];
 	while(true){
-		if(savedExpressionLength == 0) fputs("> ", stdout);
+		if(savedExpressionLength == 0) fputs("\n> ", stdout);
 		fgets(lineInput, LINE_SIZE, stdin);
 		int actualLineSize = strlen(lineInput);
 		if(actualLineSize + savedExpressionLength < EXPRESSION_SIZE) {
@@ -44,9 +46,7 @@ int main(int argc, char** argv) {
 		Ast* ast = parse(tokenizer);
 
 		Lval* lval = eval(ast, env);
-		if(lval->type == V_INTEGER){
-			printf("%d\n", lval->value.integer);
-		}
+		printLval(lval);
 
 		garbageCollect(env);
 		free(tokenizer);

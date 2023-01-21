@@ -4,22 +4,12 @@
 
 #include "eval.h"
 #include "gc.h"
+#include "std_procs.h"
 
 int hashFunction(char* key);
 Var* createVariable(char* name, Lval* value);
 void freeVar(Var* var);
-void addNativeProc(char* symbol, Lval* lval, Lval* (*proc)(Lval**, int, Env*), Env* env);
-
-Lval* addProc(Lval** lval, int quantity, Env* env);
-Lval* minusProc(Lval** lval, int quantity, Env* env);
-Lval* multiplyProc(Lval** lval, int quantity, Env* env);
-Lval* divideProc(Lval** lval, int quantity, Env* env);
-Lval* lessProc(Lval** lval, int quantity, Env* env);
-Lval* moreProc(Lval** lval, int quantity, Env* env);
-Lval* equalProc(Lval** lval, int quantity, Env* env);
-Lval* andProc(Lval** lval, int quantity, Env* env);
-Lval* orProc(Lval** lval, int quantity, Env* env);
-Lval* notProc(Lval** lval, int quantity, Env* env);
+void addNativeProc(char* symbol, Lval* (*proc)(Lval**, int), Env* env);
 
 Lval* getVar(char* name, Env* env) {
 	int index = hashFunction(name);
@@ -74,23 +64,31 @@ Env* setDefaultEnv() {
 
 	addGcRef(getGlobalGcPool(), (void*)env, ENV);
 
-	addNativeProc("+", createLval(), &addProc, env);
-	addNativeProc("-", createLval(), &minusProc, env);
-	addNativeProc("*", createLval(), &multiplyProc, env);
-	addNativeProc("/", createLval(), &divideProc, env);
-	addNativeProc(">", createLval(), &moreProc, env);
-	addNativeProc("<", createLval(), &lessProc, env);
-	addNativeProc("=", createLval(), &equalProc, env);
-	addNativeProc("and", createLval(), &andProc, env);
-	addNativeProc("or", createLval(), &orProc, env);
-	addNativeProc("not", createLval(), &notProc, env);
-
-	// TODO: Add cons, car, cdr as native procs
+	addNativeProc("+", &addProc, env);
+	addNativeProc("-", &minusProc, env);
+	addNativeProc("*", &multiplyProc, env);
+	addNativeProc("/", &divideProc, env);
+	addNativeProc(">", &moreProc, env);
+	addNativeProc("<", &lessProc, env);
+	addNativeProc("=", &equalProc, env);
+	addNativeProc("and", &andProc, env);
+	addNativeProc("or", &orProc, env);
+	addNativeProc("not", &notProc, env);
+	addNativeProc("cons", &consProc, env);
+	addNativeProc("car", &carProc, env);
+	addNativeProc("cdr", &cdrProc, env);
+	addNativeProc("list", &listProc, env);
+	addNativeProc("number?", &numberPredProc, env);
+	addNativeProc("boolean?", &booleanPredProc, env);
+	addNativeProc("pair?", &pairPredProc, env);
+	addNativeProc("null?", &nullPredProc, env);
+	addNativeProc("lambda?", &lambdaPredProc, env);
 	
 	return env;
 }
 
-void addNativeProc(char* symbol, Lval* lval, Lval* (*proc)(Lval**, int, Env*), Env* env) {
+void addNativeProc(char* symbol, Lval* (*proc)(Lval**, int), Env* env) {
+	Lval* lval = createLval();
 	lval->type = V_LAMBDA;
 	lval->value.lambda = (Lambda*)malloc(sizeof(Lambda));
 	lval->value.lambda->type = NATIVE;
@@ -125,122 +123,6 @@ Var* createVariable(char* name, Lval* value) {
 int hashFunction(char* key) {
 	char letter = key[0];
 	return (letter & 0b1111) ^ 0b1010;
-}
-
-Lval* addProc(Lval** lval, int quantity, Env* env) {
-	assert(lval[0]->type == V_INTEGER);
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_INTEGER;
-	lvalResult->value.integer = lval[0]->value.integer;
-	for(int i = 1; i < quantity; i++) {
-		assert(lval[i]->type == V_INTEGER);
-		lvalResult->value.integer += lval[i]->value.integer;
-	}
-	return lvalResult;
-}
-
-Lval* minusProc(Lval** lval, int quantity, Env* env) {
-	assert(lval[0]->type == V_INTEGER);
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_INTEGER;
-	lvalResult->value.integer = lval[0]->value.integer;
-	for(int i = 1; i < quantity; i++) {
-		assert(lval[i]->type == V_INTEGER);
-		lvalResult->value.integer -= lval[i]->value.integer;
-	}
-	return lvalResult;
-}
-
-Lval* multiplyProc(Lval** lval, int quantity, Env* env) {
-	assert(lval[0]->type == V_INTEGER);
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_INTEGER;
-	lvalResult->value.integer = lval[0]->value.integer;
-	for(int i = 1; i < quantity; i++) {
-		assert(lval[i]->type == V_INTEGER);
-		lvalResult->value.integer *= lval[i]->value.integer;
-	}
-	return lvalResult;
-}
-
-Lval* divideProc(Lval** lval, int quantity, Env* env) {
-	assert(lval[0]->type == V_INTEGER);
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_INTEGER;
-	lvalResult->value.integer = lval[0]->value.integer;
-	for(int i = 1; i < quantity; i++) {
-		assert(lval[i]->type == V_INTEGER);
-		lvalResult->value.integer /= lval[i]->value.integer;
-	}
-	return lvalResult;
-}
-
-Lval* lessProc(Lval** lval, int quantity, Env* env) {
-	assert(quantity == 2);
-	assert(lval[0]->type == V_INTEGER);
-	assert(lval[1]->type == V_INTEGER);
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_BOOLEAN;
-	lvalResult->value.boolean = lval[0]->value.integer < lval[1]->value.integer;
-	return lvalResult;
-}
-
-Lval* moreProc(Lval** lval, int quantity, Env* env) {
-	assert(quantity == 2);
-	assert(lval[0]->type == V_INTEGER);
-	assert(lval[1]->type == V_INTEGER);
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_BOOLEAN;
-	lvalResult->value.boolean = lval[0]->value.integer > lval[1]->value.integer;
-	return lvalResult;
-}
-
-Lval* equalProc(Lval** lval, int quantity, Env* env) {
-	assert(quantity == 2);
-	assert(lval[0]->type == V_INTEGER);
-	assert(lval[1]->type == V_INTEGER);
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_BOOLEAN;
-	lvalResult->value.boolean = lval[0]->value.integer == lval[1]->value.integer;
-	return lvalResult;
-}
-
-Lval* andProc(Lval** lval, int quantity, Env* env) {
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_BOOLEAN;
-	for(int i = 0; i < quantity; i++) {
-		if(lval[i]->value.boolean == false) {
-			lvalResult->value.boolean = false;
-			return lvalResult;
-		}
-	}
-	lvalResult->value.boolean = true;
-	return lvalResult;
-}
-
-Lval* orProc(Lval** lval, int quantity, Env* env) {
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_BOOLEAN;
-	for(int i = 0; i < quantity; i++) {
-		if(lval[i]->type != V_BOOLEAN || (lval[i]->type == V_BOOLEAN && lval[i]->value.boolean == true)) {
-			lvalResult->value.boolean = true;
-			return lvalResult;
-		}
-	}
-	lvalResult->value.boolean = false;
-	return lvalResult;
-}
-
-Lval* notProc(Lval** lval, int quantity, Env* env) {
-	assert(quantity == 1);
-	Lval* lvalResult = createLval();
-	lvalResult->type = V_BOOLEAN;
-	if(lval[0]->type == V_BOOLEAN && lval[0]->value.boolean == false) {
-		lvalResult->value.boolean = true;
-		return lvalResult;
-	}
-	lvalResult->value.boolean = false;
-	return lvalResult;
 }
 
 void freeEnv(Env* env) {

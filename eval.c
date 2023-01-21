@@ -25,7 +25,13 @@ Lval* eval(Ast* ast, Env* env) {
 				lval->value.boolean = atom->value.boolean;
 				break;
 			case A_SYMBOL:
-				lval = getVar(atom->value.symbol, env);
+				if(strcmp(atom->value.symbol, "null") == 0) {
+					lval = createLval();
+					lval->type = V_NULL;
+				}
+				else {
+					lval = getVar(atom->value.symbol, env);
+				}
 				break;
 			default:
 				printf("Unexpected atom!");
@@ -109,18 +115,18 @@ Lval* eval(Ast* ast, Env* env) {
 	return lval;
 }
 
-Lval* apply(Lval* operation, Lval** lval, int quantity, Env* env) {
+Lval* apply(Lval* operation, Lval** lvalList, int quantity, Env* env) {
 	assert(operation->type == V_LAMBDA);
 	Lambda* lambda = operation->value.lambda;
 	if(lambda->type == NATIVE) {
-		return lambda->function(lval, quantity, env);
+		return lambda->function(lvalList, quantity);
 	}
 	else if (lambda->type == CONSTRUCTED) {
 		assert(lambda->argc == quantity);
 
 		Env* newEnv = extendEnv(lambda->env);
 		for(int i = 0; i < quantity; i++) {
-			addVar(lambda->argv[i], lval[i], newEnv);
+			addVar(lambda->argv[i], lvalList[i], newEnv);
 		}
 	
 		return eval(lambda->body, newEnv);
@@ -145,8 +151,11 @@ void freeLval(Lval* lval) {
 			freeAst(lambda->body);
 		}
 	}
-	if(lval->type == V_SYMBOL) {
+	else if(lval->type == V_SYMBOL) {
 		free(lval->value.string);
+	}
+	else if(lval->type == V_PAIR) {
+		free(lval->value.pair);
 	}
 	// TODO: Check if lval is string
 	free(lval);

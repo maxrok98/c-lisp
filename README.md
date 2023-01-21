@@ -9,7 +9,7 @@
 - [x] Lambdas
 - [x] Garbage Collector 
 - [x] Conditions
-- [ ] Lists
+- [x] Lists
 - [ ] Mutators
 - [ ] Read from file
 
