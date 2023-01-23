@@ -56,11 +56,7 @@ Lval* eval(Ast* ast, Env* env) {
 
 					addVar(variable, value, env);
 
-					Lval* result = createLval();
-					result->type = V_SYMBOL;
-					result->value.string = (char*)malloc(sizeof(char) * strlen(variable) + 1);
-					strcpy(result->value.string, variable);
-					return result;
+					return value;
 				}
 				else if(strcmp(atom->value.symbol, "lambda") == 0) {
 					assert(list->quantity == 3);
@@ -99,6 +95,27 @@ Lval* eval(Ast* ast, Env* env) {
 					}
 					return eval(list->astChildren[2], env);
 				}
+				else if(strcmp(atom->value.symbol, "set!") == 0) {
+					assert(list->quantity == 3);
+					assert(((Atom*)list->astChildren[1]->value)->type == A_SYMBOL);
+
+					Lval* value = eval(list->astChildren[2], env);
+					Atom* secondAtom = (Atom*)list->astChildren[1]->value;
+					char* variable = secondAtom->value.symbol;
+
+					setVar(variable, value, env);
+
+					return value;
+				}
+				else if(strcmp(atom->value.symbol, "begin") == 0) {
+					assert(list->quantity > 1);
+
+					Lval* result;
+					for(int i = 1; i < list->quantity; i++) {
+						result = eval(list->astChildren[i], env);
+					}
+					return result;
+				}
 			}
 			
 		}
@@ -116,6 +133,7 @@ Lval* eval(Ast* ast, Env* env) {
 }
 
 Lval* apply(Lval* operation, Lval** lvalList, int quantity, Env* env) {
+	assert(operation != NULL);
 	assert(operation->type == V_LAMBDA);
 	Lambda* lambda = operation->value.lambda;
 	if(lambda->type == NATIVE) {

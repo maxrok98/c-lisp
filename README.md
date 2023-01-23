@@ -10,7 +10,7 @@
 - [x] Garbage Collector 
 - [x] Conditions
 - [x] Lists
-- [ ] Mutators
+- [x] Mutators
 - [ ] Read from file
 
 ## Garbage Collector

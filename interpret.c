@@ -11,7 +11,7 @@
 #include "gc.h"
 #include "debug_utils.h"
 
-#define EXPRESSION_SIZE 128
+#define EXPRESSION_SIZE 1024
 #define LINE_SIZE (EXPRESSION_SIZE / 2)
 
 void printLval(Lval* lval);

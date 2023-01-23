@@ -163,6 +163,22 @@ Lval* listProc(Lval** lval, int quantity) {
 	return lvalResult;
 }
 
+Lval* setCarProc(Lval** lval, int quantity) {
+	assert(quantity == 2);
+	assert(lval[0]->type == V_PAIR);
+	
+	lval[0]->value.pair->car = lval[1];
+	return lval[0];
+}
+
+Lval* setCdrProc(Lval** lval, int quantity) {
+	assert(quantity == 2);
+	assert(lval[0]->type == V_PAIR);
+	
+	lval[0]->value.pair->cdr = lval[1];
+	return lval[0];
+}
+
 Lval* numberPredProc(Lval** lval, int quantity) {
 	assert(quantity == 1);
 	Lval* lvalResult = createLval();

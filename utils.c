@@ -35,14 +35,15 @@ void printLval(Lval* lval) {
 	else if(lval->type == V_LAMBDA) {
 		Lambda* lambda = lval->value.lambda;
 		if(lambda->type == NATIVE) {
-			printf("<native procedure>");
+			printf("#[native procedure]");
 		}
 		else if(lambda->type == CONSTRUCTED) {
-			printf("<\u03bb (");
+			printf("#[\u03bb (");
 			for(int i = 0; i < lambda->argc; i++) {
 				printf("%s ", lambda->argv[i]);
+				if(i == lambda->argc - 1) printf("\b");
 			}
-			printf("\b)>");
+			printf(")]");
 		}
 	}
 	else if(lval->type == V_PAIR) {

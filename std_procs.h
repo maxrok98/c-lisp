@@ -16,6 +16,8 @@ Lval* consProc(Lval** lval, int quantity);
 Lval* carProc(Lval** lval, int quantity);
 Lval* cdrProc(Lval** lval, int quantity);
 Lval* listProc(Lval** lval, int quantity);
+Lval* setCarProc(Lval** lval, int quantity);
+Lval* setCdrProc(Lval** lval, int quantity);
 Lval* numberPredProc(Lval** lval, int quantity);
 Lval* booleanPredProc(Lval** lval, int quantity);
 Lval* pairPredProc(Lval** lval, int quantity);

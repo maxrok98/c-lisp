@@ -23,12 +23,9 @@ Lval* getVar(char* name, Env* env) {
 		varBucket = varBucket->next;
 	}
 
-	if(env->root == NULL) {
-		return NULL;
-	}
-	else {
-		return getVar(name, env->root);
-	}
+	assert(env->root != NULL); // variable not fount
+
+	return getVar(name, env->root);
 }
 
 void addVar(char* name, Lval* value, Env* env) {
@@ -57,6 +54,24 @@ void addVar(char* name, Lval* value, Env* env) {
 	}
 }
 
+void setVar(char* name, Lval* value, Env* env) {
+	int index = hashFunction(name);
+
+	Var* varBucket = env->variables[index];
+	while(varBucket != NULL) {
+		if(strcmp(varBucket->name, name) == 0) {
+			varBucket->value = value;
+			return;
+		}
+	
+		varBucket = varBucket->next;
+	}
+
+	assert(env->root != NULL); // varible not found
+
+	setVar(name, value, env->root);
+}
+
 Env* setDefaultEnv() {
 	Env* env = (Env*)malloc(sizeof(Env));
 	env->root = NULL;
@@ -78,6 +93,8 @@ Env* setDefaultEnv() {
 	addNativeProc("car", &carProc, env);
 	addNativeProc("cdr", &cdrProc, env);
 	addNativeProc("list", &listProc, env);
+	addNativeProc("set-car!", &setCarProc, env);
+	addNativeProc("set-cdr!", &setCdrProc, env);
 	addNativeProc("number?", &numberPredProc, env);
 	addNativeProc("boolean?", &booleanPredProc, env);
 	addNativeProc("pair?", &pairPredProc, env);
