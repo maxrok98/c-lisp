@@ -29,9 +29,21 @@ Tokenizer* generateTokenizer(char* expression) {
  */
 Token* nextToken(Tokenizer* tokenizer) {
 	assert(tokenizer->start == tokenizer->end);
+
+	if(tokenizer->start >= tokenizer->expressionLength) return NULL;
+
 	while(isspace(tokenizer->expression[tokenizer->start])) {
 		tokenizer->start++; tokenizer->end++;
 		if(tokenizer->start >= tokenizer->expressionLength) return NULL;
+	}
+
+	if(tokenizer->expression[tokenizer->start] == ';'){
+		while(tokenizer->expression[tokenizer->start] != '\n') {
+			tokenizer->start++; tokenizer->end++;
+			if(tokenizer->start >= tokenizer->expressionLength) return NULL;
+		}
+		tokenizer->start++; tokenizer->end++;
+		return nextToken(tokenizer);
 	}
 
 	Token* token = (Token*)malloc(sizeof(Token));
@@ -76,7 +88,7 @@ Token* nextToken(Tokenizer* tokenizer) {
 }
 
 void freeToken(Token* token) {
-	if(token->value != NULL)
+	if(token->tokenType != L_PAREN && token->tokenType != R_PAREN)
 		free(token->value);
 	free(token);
 }

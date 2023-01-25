@@ -3,10 +3,10 @@
 #include <string.h>
 #include <assert.h>
 
-//#include "env.h"
 #include "eval.h"
 #include "parser.h"
 #include "gc.h"
+#include "utils.h"
 
 Lval* eval(Ast* ast, Env* env) {
 	Lval* lval;
@@ -115,6 +115,20 @@ Lval* eval(Ast* ast, Env* env) {
 						result = eval(list->astChildren[i], env);
 					}
 					return result;
+				}
+				else if(strcmp(atom->value.symbol, "load") == 0) {
+					assert(list->quantity == 2);
+
+					char* fileName = ((Atom*)list->astChildren[1]->value)->value.symbol;
+					char* fileWithExtension = (char*)calloc(strlen(fileName) + 4, sizeof(char));
+					strcpy(fileWithExtension, fileName);
+					strcat(fileWithExtension, ".scm");
+
+					loadFile(fileWithExtension, env);
+
+					free(fileWithExtension);
+
+					return NULL;
 				}
 			}
 			

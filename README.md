@@ -11,7 +11,7 @@
 - [x] Conditions
 - [x] Lists
 - [x] Mutators
-- [ ] Read from file
+- [x] Read from file
 
 ## Garbage Collector
  Garbage collection is implemented in a tracing way (specifically with a [mark-and-sweep](https://en.wikipedia.org/wiki/Tracing_garbage_collection#Na%C3%AFve_mark-and-sweep) algorithm), when value or environment created its reference is registered in GC pool.

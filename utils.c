@@ -1,7 +1,10 @@
+#include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "utils.h"
+#include "gc.h"
 
 bool isList(Lval* lval);
 
@@ -26,6 +29,7 @@ int checkParensParity(char* input) {
 }
 
 void printLval(Lval* lval) {
+	if(lval == NULL) return;
 	if(lval->type == V_SYMBOL) {
 		printf("%s", lval->value.string);
 	}
@@ -80,3 +84,52 @@ bool isList(Lval* lval) {
 	}
 	return false;
 }
+
+void loadFile(char* fileName, Env* env) {
+	FILE* f = fopen(fileName, "rb");
+	if(f == NULL) {
+		printf("Error: %s file not found!\n", fileName);
+		return;
+	}
+	fseek(f, 0, SEEK_END);
+	long fsize = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	char* fileExpression = malloc(fsize + 1);
+	fread(fileExpression, fsize, 1, f);
+	fclose(f);
+
+	fileExpression[fsize] = 0;
+
+	Tokenizer* tokenizer = generateTokenizer(fileExpression);
+	Ast* ast;
+	while(ast = parse(tokenizer)) {
+		eval(ast, env);
+		freeAst(ast);
+	}
+	garbageCollect(env);
+}
+
+void readInputExpression(char* expressionInput) {
+	int savedExpressionLength = 0;
+	char lineInput[LINE_SIZE];
+
+	do {
+		if(savedExpressionLength == 0) fputs("\n> ", stdout);
+
+		fgets(lineInput, LINE_SIZE, stdin);
+
+		int actualLineSize = strlen(lineInput);
+		if(actualLineSize + savedExpressionLength < EXPRESSION_SIZE) {
+			strcpy(expressionInput + savedExpressionLength, lineInput);
+			savedExpressionLength += actualLineSize;			
+		}
+
+		if(checkParensParity(expressionInput) < 0) {
+			printf("Error: unexpected close paren ')'");
+			savedExpressionLength = 0;
+		}
+	} 
+	while(checkParensParity(expressionInput) > 0 || checkParensParity(expressionInput) < 0);
+}
+

@@ -6,15 +6,10 @@
 #include "tokenizer.h"
 #include "parser.h"
 #include "eval.h"
-//#include "env.h"
+#include "env.h"
 #include "utils.h"
 #include "gc.h"
 #include "debug_utils.h"
-
-#define EXPRESSION_SIZE 1024
-#define LINE_SIZE (EXPRESSION_SIZE / 2)
-
-void printLval(Lval* lval);
 
 int main(int argc, char** argv) {
 	printf("Scheme interpreter:\n");
@@ -22,25 +17,15 @@ int main(int argc, char** argv) {
 	setGlobalGcPool(createGcPool());
 	Env* env = setDefaultEnv();
 
+	if(argc > 1 && strcmp(argv[1], "-f") == 0) {
+		for(int i = 2; i < argc; i++) {
+			loadFile(argv[i], env);
+		}
+	}
+
 	char expressionInput[EXPRESSION_SIZE];
-	int savedExpressionLength = 0;
-	char lineInput[LINE_SIZE];
 	while(true){
-		if(savedExpressionLength == 0) fputs("\n> ", stdout);
-		fgets(lineInput, LINE_SIZE, stdin);
-		int actualLineSize = strlen(lineInput);
-		if(actualLineSize + savedExpressionLength < EXPRESSION_SIZE) {
-			strcpy(expressionInput + savedExpressionLength, lineInput);
-			savedExpressionLength += actualLineSize;			
-		}
-		if(checkParensParity(expressionInput) > 0) {
-			continue;
-		}
-		else if(checkParensParity(expressionInput) < 0) {
-			printf("Error: unexpected close paren ')'");
-			savedExpressionLength = 0;
-			continue;
-		}
+		readInputExpression(expressionInput);
 
 		Tokenizer* tokenizer = generateTokenizer(expressionInput);
 		Ast* ast = parse(tokenizer);
@@ -48,10 +33,9 @@ int main(int argc, char** argv) {
 		Lval* lval = eval(ast, env);
 		printLval(lval);
 
-		garbageCollect(env);
 		free(tokenizer);
 		freeAst(ast);
-		savedExpressionLength = 0;
+		garbageCollect(env);
 	}
 }
 

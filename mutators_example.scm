@@ -2,6 +2,7 @@
 	(lambda (n)
 		(lambda () (begin (set! n (+ 1 n)) n))))
 
+;; example of object with internal state that can increment and reset
 (define counter
 	(lambda (n)
 		(begin 
