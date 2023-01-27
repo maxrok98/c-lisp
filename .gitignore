@@ -1,1 +1,4 @@
 repl
+test
+*.a
+*.o
