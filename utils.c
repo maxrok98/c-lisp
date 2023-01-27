@@ -69,6 +69,14 @@ void printLval(Lval* lval) {
 			printf(")");
 		}
 	}
+	else if(lval->type == V_BOOLEAN) {
+		if(lval->value.boolean){
+			printf("#t");
+		}
+		else {
+			printf("#f");
+		}
+	}
 	else if(lval->type == V_NULL) {
 		printf("null");
 	}
