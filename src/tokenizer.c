@@ -61,7 +61,8 @@ Token* nextToken(Tokenizer* tokenizer) {
 	}
 
 	while(!isspace(tokenizer->expression[tokenizer->end]) &&
-				!isdelimiter(tokenizer->expression[tokenizer->end])) {
+				!isdelimiter(tokenizer->expression[tokenizer->end]) && 
+				tokenizer->end < tokenizer->expressionLength) {
 		tokenizer->end++;
 	}
 	tokenizer->end--;

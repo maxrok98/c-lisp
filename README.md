@@ -1,4 +1,5 @@
-[![build](https://github.com/maxrok98/c-lisp/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/maxrok98/c-list/actions/workflows/c-cpp.yml)
+[![build](https://github.com/maxrok98/c-lisp/actions/workflows/build.yml/badge.svg)](https://github.com/maxrok98/c-list/actions/workflows/build.yml)
+[![tests](https://github.com/maxrok98/c-lisp/actions/workflows/tests.yml/badge.svg)](https://github.com/maxrok98/c-list/actions/workflows/tests.yml)
 
 # c-lisp
  My attempt on writing LISP interpreter in C.
