@@ -46,7 +46,7 @@ Ast* parse(Tokenizer* tokenizer) {
 	
 		List* list = initList();
 		Ast* childAst;
-		while(childAst = parse(tokenizer)) {
+		while((childAst = parse(tokenizer))) {
 			addAst(list, childAst);
 		}
 		ast->value = (void*)list;

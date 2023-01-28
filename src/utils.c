@@ -111,7 +111,7 @@ void loadFile(char* fileName, Env* env) {
 
 	Tokenizer* tokenizer = generateTokenizer(fileExpression);
 	Ast* ast;
-	while(ast = parse(tokenizer)) {
+	while((ast = parse(tokenizer))) {
 		eval(ast, env);
 		freeAst(ast);
 	}

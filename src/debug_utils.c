@@ -4,7 +4,7 @@
 
 void printDepth(char* c, int depth) {
 	for(int i = 0; i < depth; i++){
-		printf(c);
+		printf("%c", *c);
 	}
 }
 
@@ -23,6 +23,11 @@ void printAstAsTree(Ast* ast, int depth) {
 				break;
 			case A_SYMBOL:
 				printf("%s\n", atom->value.symbol);
+				break;
+			case A_BOOLEAN:
+				(atom->value.boolean) ?
+					printf("#t\n") :
+					printf("#f\n");
 				break;
 		}
 	}
@@ -57,12 +62,18 @@ void printToken(Token* token) {
 		case SYMBOL:
 			printf("Token: SYMBOL - %s\n", token->value);
 			break;
+		case BOOLEAN:
+			printf("Token: BOOLEAN - %s\n", token->value);
+			break;
+		case ERR:
+			printf("Token: ERR - %s\n", token->value);
+			break;
 	}
 }
 
 void printTokenizer(Tokenizer* tokenizer) {
 	Token* token;
-	while(token = nextToken(tokenizer)) {
+	while((token = nextToken(tokenizer))) {
 		printToken(token);
 		freeToken(token);
 	}
