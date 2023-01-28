@@ -1,5 +1,5 @@
 CS=src/tokenizer.c src/parser.c src/eval.c src/env.c src/gc.c src/utils.c src/std_procs.c src/debug_utils.c
-TS=tests/tokenizer_tests.c
+TS=tests/tokenizer_tests.h
 CFLAGS=-Wall -ggdb
 CC=gcc
 
