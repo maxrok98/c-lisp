@@ -8,7 +8,6 @@
 GcPool* GlobalGcPool;
 
 GcPool* collect(GcPool* gcPool);
-void freeGcPool(GcPool* gcPool);
 void markEnv(Env* env);
 void markLval(Lval* lval);
 

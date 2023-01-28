@@ -37,5 +37,9 @@ int main(int argc, char** argv) {
 		freeAst(ast);
 		garbageCollect(env);
 	}
+
+	freeGcPool(getGlobalGcPool());
+	freeEnv(env);
+	return 0;
 }
 

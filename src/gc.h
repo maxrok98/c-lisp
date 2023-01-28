@@ -26,3 +26,4 @@ GcPool* getGlobalGcPool();
 void setGlobalGcPool(GcPool* gcPool);
 GcPool* garbageCollect(Env* root);
 void addGcRef(GcPool* gcPool, void* ref, RefType refType);
+void freeGcPool(GcPool* gcPool);
