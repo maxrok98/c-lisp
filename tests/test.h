@@ -7,7 +7,7 @@ extern int tests_failed;
 
 #define TEST(name)\
 	tests_run++;\
-	printf("%s ... ", #name);\
+	printf("  %s ... ", #name);\
 	if (name() == 0) printf("OK\n"); else printf("FAILED\n");
 
 #define ASSERT_TRUE(test)\
