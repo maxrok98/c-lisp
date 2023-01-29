@@ -78,4 +78,3 @@ void printTokenizer(Tokenizer* tokenizer) {
 		freeToken(token);
 	}
 }
-

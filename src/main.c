@@ -27,6 +27,10 @@ int main(int argc, char** argv) {
 	while(true){
 		readInputExpression(expressionInput);
 
+		if(stringIsEmpty(expressionInput)) {
+			continue;
+		}
+
 		Tokenizer* tokenizer = generateTokenizer(expressionInput);
 		Ast* ast = parse(tokenizer);
 

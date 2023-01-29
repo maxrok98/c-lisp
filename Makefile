@@ -3,7 +3,7 @@ TS=tests/tokenizer_tests.h tests/parser_tests.h
 CFLAGS=-Wall -ggdb
 CC=gcc
 
-repl: src/main.c 
+repl: src/main.c $(CS)
 	$(CC) $(CFLAGS) -o repl src/main.c $(CS)
 
 check: tests/main.c 

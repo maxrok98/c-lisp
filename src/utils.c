@@ -28,7 +28,7 @@ int checkParensParity(char* input) {
 	return parity;
 }
 
-void printLval(Lval* lval) {
+void printValue(Lval* lval) {
 	if(lval == NULL) return;
 	if(lval->type == V_SYMBOL) {
 		printf("%s", lval->value.string);
@@ -82,6 +82,11 @@ void printLval(Lval* lval) {
 	}
 }
 
+void printLval(Lval* lval) {
+	printValue(lval);
+	printf("\n");
+}
+
 bool isList(Lval* lval) {
 	Pair* pair = lval->value.pair;
 	while(pair->cdr->type == V_PAIR || pair->cdr->type == V_NULL) {
@@ -123,7 +128,7 @@ void readInputExpression(char* expressionInput) {
 	char lineInput[LINE_SIZE];
 
 	do {
-		if(savedExpressionLength == 0) fputs("\n> ", stdout);
+		if(savedExpressionLength == 0) fputs("> ", stdout);
 
 		fgets(lineInput, LINE_SIZE, stdin);
 
@@ -141,3 +146,12 @@ void readInputExpression(char* expressionInput) {
 	while(checkParensParity(expressionInput) > 0 || checkParensParity(expressionInput) < 0);
 }
 
+bool stringIsEmpty(char* input) {
+	while(*input != '\0') {
+		if(!isspace(*input)) {
+			return false;
+		}
+		input++;
+	}
+	return true;
+}
