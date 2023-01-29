@@ -50,7 +50,9 @@ Lval* eval(Ast* ast, Env* env) {
 					assert(list->quantity == 3);
 					assert(((Atom*)list->astChildren[1]->value)->type == A_SYMBOL);
 
-					Lval* value = eval(list->astChildren[2], env);
+					Lval* value;
+					EVAL(value, eval(list->astChildren[2], env), ;);
+
 					Atom* secondAtom = (Atom*)list->astChildren[1]->value;
 					char* variable = secondAtom->value.symbol;
 
@@ -89,7 +91,8 @@ Lval* eval(Ast* ast, Env* env) {
 				else if(strcmp(atom->value.symbol, "if") == 0) {
 					assert(list->quantity == 4);
 
-					Lval* predicate = eval(list->astChildren[1], env);
+					Lval* predicate;
+					EVAL(predicate, eval(list->astChildren[1], env), ;)
 					if(predicate->type == V_BOOLEAN && predicate->value.boolean == false) {
 						return eval(list->astChildren[3], env);
 					}
@@ -99,20 +102,19 @@ Lval* eval(Ast* ast, Env* env) {
 					assert(list->quantity == 3);
 					assert(((Atom*)list->astChildren[1]->value)->type == A_SYMBOL);
 
-					Lval* value = eval(list->astChildren[2], env);
+					Lval* value;
+					EVAL(value, eval(list->astChildren[2], env), ;);
 					Atom* secondAtom = (Atom*)list->astChildren[1]->value;
 					char* variable = secondAtom->value.symbol;
 
-					setVar(variable, value, env);
-
-					return value;
+					return setVar(variable, value, env);
 				}
 				else if(strcmp(atom->value.symbol, "begin") == 0) {
 					assert(list->quantity > 1);
 
 					Lval* result;
 					for(int i = 1; i < list->quantity; i++) {
-						result = eval(list->astChildren[i], env);
+						EVAL(result, eval(list->astChildren[i], env), ;);
 					}
 					return result;
 				}
@@ -137,25 +139,36 @@ Lval* eval(Ast* ast, Env* env) {
 		Lval** lvalList = (Lval**)malloc(sizeof(Lval*) * list->quantity - 1);
 		
 		for(int i = 1; i < list->quantity; i++) {
-			lvalList[i-1] = eval(list->astChildren[i], env);
+			Lval* lval;
+			EVAL(lval, eval(list->astChildren[i], env), free(lvalList));
+			lvalList[i-1] = lval;
 		}
-		Lval* operation = eval(firstChild, env);
-		lval = apply(operation, lvalList, list->quantity - 1, env);
-		free(lvalList);
+
+		Lval* operation;
+		EVAL(operation, eval(firstChild, env), free(lvalList));
+		EVAL(lval, apply(operation, lvalList, list->quantity - 1, env), free(lvalList));
 	}
 	return lval;
 }
 
 Lval* apply(Lval* operation, Lval** lvalList, int quantity, Env* env) {
 	assert(operation != NULL);
-	assert(operation->type == V_LAMBDA);
+	if(operation->type != V_LAMBDA) {
+		ERROR("%s is not a procedure", typeToString(operation));
+	}
 	Lambda* lambda = operation->value.lambda;
+
+	if(lambda->argc == -1 && quantity == 0) {
+		ERROR("procefure expects more than 0 parameters");
+	}
+	if(lambda->argc != -1 && lambda->argc != quantity) {
+		ERROR("procedure expects %d arguments, not %d", lambda->argc, quantity);
+	}
+
 	if(lambda->type == NATIVE) {
 		return lambda->function(lvalList, quantity);
 	}
 	else if (lambda->type == CONSTRUCTED) {
-		assert(lambda->argc == quantity);
-
 		Env* newEnv = extendEnv(lambda->env);
 		for(int i = 0; i < quantity; i++) {
 			addVar(lambda->argv[i], lvalList[i], newEnv);

@@ -9,7 +9,7 @@
 int hashFunction(char* key);
 Var* createVariable(char* name, Lval* value);
 void freeVar(Var* var);
-void addNativeProc(char* symbol, Lval* (*proc)(Lval**, int), Env* env);
+void addNativeProc(char* symbol, int argc, Lval* (*proc)(Lval**, int), Env* env);
 
 Lval* getVar(char* name, Env* env) {
 	int index = hashFunction(name);
@@ -23,7 +23,9 @@ Lval* getVar(char* name, Env* env) {
 		varBucket = varBucket->next;
 	}
 
-	assert(env->root != NULL); // variable not fount
+	if(env->root == NULL) {
+		ERROR("%s variable not bound", name);
+	}
 
 	return getVar(name, env->root);
 }
@@ -54,22 +56,24 @@ void addVar(char* name, Lval* value, Env* env) {
 	}
 }
 
-void setVar(char* name, Lval* value, Env* env) {
+Lval* setVar(char* name, Lval* value, Env* env) {
 	int index = hashFunction(name);
 
 	Var* varBucket = env->variables[index];
 	while(varBucket != NULL) {
 		if(strcmp(varBucket->name, name) == 0) {
 			varBucket->value = value;
-			return;
+			return value;
 		}
 	
 		varBucket = varBucket->next;
 	}
 
-	assert(env->root != NULL); // varible not found
+	if(env->root == NULL) {
+		ERROR("%s variable not bound", name);
+	}
 
-	setVar(name, value, env->root);
+	return setVar(name, value, env->root);
 }
 
 Env* setDefaultEnv() {
@@ -79,37 +83,38 @@ Env* setDefaultEnv() {
 
 	addGcRef(getGlobalGcPool(), (void*)env, ENV);
 
-	addNativeProc("+", &addProc, env);
-	addNativeProc("-", &minusProc, env);
-	addNativeProc("*", &multiplyProc, env);
-	addNativeProc("/", &divideProc, env);
-	addNativeProc(">", &moreProc, env);
-	addNativeProc("<", &lessProc, env);
-	addNativeProc("=", &equalProc, env);
-	addNativeProc("and", &andProc, env);
-	addNativeProc("or", &orProc, env);
-	addNativeProc("not", &notProc, env);
-	addNativeProc("cons", &consProc, env);
-	addNativeProc("car", &carProc, env);
-	addNativeProc("cdr", &cdrProc, env);
-	addNativeProc("list", &listProc, env);
-	addNativeProc("set-car!", &setCarProc, env);
-	addNativeProc("set-cdr!", &setCdrProc, env);
-	addNativeProc("number?", &numberPredProc, env);
-	addNativeProc("boolean?", &booleanPredProc, env);
-	addNativeProc("pair?", &pairPredProc, env);
-	addNativeProc("null?", &nullPredProc, env);
-	addNativeProc("lambda?", &lambdaPredProc, env);
+	addNativeProc("+", -1, &addProc, env);
+	addNativeProc("-", -1, &minusProc, env);
+	addNativeProc("*", -1, &multiplyProc, env);
+	addNativeProc("/", -1, &divideProc, env);
+	addNativeProc(">", -1, &moreProc, env);
+	addNativeProc("<", -1, &lessProc, env);
+	addNativeProc("=", 2, &equalProc, env);
+	addNativeProc("and", -1, &andProc, env);
+	addNativeProc("or", -1, &orProc, env);
+	addNativeProc("not", -1, &notProc, env);
+	addNativeProc("cons", 2, &consProc, env);
+	addNativeProc("car", 1, &carProc, env);
+	addNativeProc("cdr", 1, &cdrProc, env);
+	addNativeProc("list", -1, &listProc, env);
+	addNativeProc("set-car!", 2, &setCarProc, env);
+	addNativeProc("set-cdr!", 2, &setCdrProc, env);
+	addNativeProc("number?", 1, &numberPredProc, env);
+	addNativeProc("boolean?", 1, &booleanPredProc, env);
+	addNativeProc("pair?", 1, &pairPredProc, env);
+	addNativeProc("null?", 1, &nullPredProc, env);
+	addNativeProc("lambda?", 1, &lambdaPredProc, env);
 	
 	return env;
 }
 
-void addNativeProc(char* symbol, Lval* (*proc)(Lval**, int), Env* env) {
+void addNativeProc(char* symbol, int argc, Lval* (*proc)(Lval**, int), Env* env) {
 	Lval* lval = createLval();
 	lval->type = V_LAMBDA;
 	lval->value.lambda = (Lambda*)malloc(sizeof(Lambda));
 	lval->value.lambda->type = NATIVE;
 	lval->value.lambda->function = proc;
+	lval->value.lambda->argc = argc;
 	addVar(symbol, lval, env);
 }
 

@@ -1,5 +1,3 @@
-/* file minunit_example.c */
-
 #include <stdio.h>
 
 #include "test.h"

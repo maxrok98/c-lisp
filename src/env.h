@@ -22,7 +22,7 @@ typedef struct Env {
 
 Lval* getVar(char* name, Env* env);
 void addVar(char* name, Lval* value, Env* env);
-void setVar(char* name, Lval* value, Env* env);
+Lval* setVar(char* name, Lval* value, Env* env);
 Env* setDefaultEnv();
 Env* extendEnv(Env* env); // register referense in GC pool
 void freeEnv(Env* env);

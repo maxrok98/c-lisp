@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "utils.h"
 #include "gc.h"
@@ -55,7 +56,7 @@ void printValue(Lval* lval) {
 			printf("(");
 
 			while(lval->type != V_NULL) {
-				printLval(lval->value.pair->car);
+				printValue(lval->value.pair->car);
 				printf(" ");
 				lval = lval->value.pair->cdr;
 			}
@@ -63,9 +64,9 @@ void printValue(Lval* lval) {
 		}
 		else {
 			printf("(");
-			printLval(lval->value.pair->car);
+			printValue(lval->value.pair->car);
 			printf(" . ");
-			printLval(lval->value.pair->cdr);
+			printValue(lval->value.pair->cdr);
 			printf(")");
 		}
 	}
@@ -76,6 +77,9 @@ void printValue(Lval* lval) {
 		else {
 			printf("#f");
 		}
+	}
+	else if(lval->type == V_ERR) {
+		printf("ERROR: %s", lval->value.errorMessage);
 	}
 	else if(lval->type == V_NULL) {
 		printf("null");
@@ -154,4 +158,27 @@ bool stringIsEmpty(char* input) {
 		input++;
 	}
 	return true;
+}
+
+char* typeToString(Lval* lval) {
+	switch(lval->type) {
+		case V_INTEGER:
+			return S_INTEGER;
+		case V_REAL:
+			return S_REAL;
+		case V_BOOLEAN:
+			return S_BOOLEAN;
+		case V_STRING:
+			return S_STRING;
+		case V_LAMBDA:
+			return S_LAMBDA;
+		case V_SYMBOL:
+			return S_SYMBOL;
+		case V_PAIR:
+			return S_PAIR;
+		case V_NULL:
+			return S_NULL;
+		case V_ERR:
+			return S_ERR;
+	}
 }

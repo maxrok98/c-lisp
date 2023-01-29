@@ -1,8 +1,22 @@
 #pragma once
 
+#include <stdio.h> // only for snprintf
 #include <stdbool.h>
 
 #include "parser.h"
+
+#define EVAL(lval, eval, finalize)\
+	lval = eval;\
+	if(lval->type == V_ERR) { finalize; return lval; }
+
+#define ERR_BUFFER_SIZE 512
+
+#define ERROR(...)\
+	Lval* lval = createLval();\
+	lval->type = V_ERR;\
+	lval->value.errorMessage = (char*)malloc(sizeof(char) * ERR_BUFFER_SIZE);\
+	snprintf(lval->value.errorMessage, ERR_BUFFER_SIZE, ##__VA_ARGS__);\
+	return lval;
 
 typedef enum LvalType {
 	V_INTEGER,
@@ -12,7 +26,8 @@ typedef enum LvalType {
 	V_LAMBDA,
 	V_SYMBOL,
 	V_PAIR,
-	V_NULL
+	V_NULL,
+	V_ERR
 } LvalType;
 
 typedef struct Lambda Lambda;
@@ -26,6 +41,7 @@ typedef struct Lval {
 		double real;
 		bool boolean;
 		char* string;
+		char* errorMessage;
 		Pair* pair;
 		Lambda* lambda;
 	} value;
