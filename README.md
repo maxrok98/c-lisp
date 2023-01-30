@@ -57,7 +57,7 @@ Closures are procedures executed in environment they were defined.
 ```
 > (define counter
     (lambda (n)
-		    (lambda () (begin (set! n (+ 1 n)) n))))
+      (lambda () (begin (set! n (+ 1 n)) n))))
 > (define c1 (counter 10))
 > (define c2 (counter 20))
 > (c1)
