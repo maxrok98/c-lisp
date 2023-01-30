@@ -43,7 +43,6 @@ Functions are define by assigning lambda to variable
 > (define square (lambda (n) (* n n)))
 > (square 3)
 9
-
 ```
 
 ### Conditions
